@@ -99,6 +99,7 @@
 define network::route (
   $ipaddress,
   $netmask,
+  $options   = [],
   $gateway   = undef,
   $metric    = undef,
   $scope     = undef,
@@ -110,6 +111,7 @@ define network::route (
   # Validate our arrays
   validate_array($ipaddress)
   validate_array($netmask)
+  validate_array($options)
 
   if $gateway {
     validate_array($gateway)
@@ -129,6 +131,16 @@ define network::route (
 
   if $table {
     validate_array($table)
+  }
+
+  $options_strings = zip(map($ipaddress) |$ip| {{
+    '-f' => case $ip {
+      /^([0-9]+[.]){3}[0-9]+$/:             { 'inet'  } # Stdlib::Compat::Ipv4 should work
+      /^([0-9A-Fa-f:]*:){2}[0-9A-Fa-f:]*$/: { 'inet6' } # Stdlib::Compat::Ipv6 should work
+      default:                              { 'any'   }
+    }
+  }}, $options).map |$hs| {
+    any2array(merge($hs[0], $hs[1])).join(' ')
   }
 
   include ::network

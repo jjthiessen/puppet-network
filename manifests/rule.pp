@@ -26,12 +26,14 @@
 #
 
 define network::rule (
-  $iprule,
+  $iprule    = [],
+  $ip6rule   = [],
   $interface = $name,
   $ensure    = 'present'
 ) {
   # Validate our arrays
   validate_array($iprule)
+  validate_array($ip6rule)
 
   include ::network
 
